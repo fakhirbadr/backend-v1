@@ -1,18 +1,35 @@
 import TicketMaintenance from "../models/ticketMaintenancemodel.js";
+import moment from "moment";
 
 // Get all tickets
 export const getAllTickets = async (req, res) => {
   try {
-    // Vérifie si le filtre "isClosed" est présent dans la requête
-    const { isClosed } = req.query;
+    // Vérifie les filtres présents dans la requête
+    const { isClosed, currentMonth, site } = req.query;
 
-    // Crée une condition de filtre si "isClosed" est fourni
+    // Crée une condition de filtre
     const filter = {};
+
+    // Ajoute un filtre pour "isClosed" si présent
     if (isClosed !== undefined) {
       filter.isClosed = isClosed === "true"; // Convertit "true"/"false" en boolean
     }
 
-    // Récupère les tickets en fonction du filtre
+    // Ajoute un filtre pour le mois actuel si "currentMonth" est présent
+    if (currentMonth === "true") {
+      const startOfMonth = moment().startOf("month").toDate(); // Début du mois
+      const endOfMonth = moment().endOf("month").toDate(); // Fin du mois
+
+      filter.createdAt = { $gte: startOfMonth, $lte: endOfMonth };
+    }
+
+    // Ajoute un filtre pour "site" si présent
+    if (site) {
+      const sites = site.split(","); // Si plusieurs sites sont passés, on les sépare par des virgules
+      filter.site = { $in: sites }; // Utilise $in pour rechercher dans une liste
+    }
+
+    // Récupère les tickets en fonction des filtres
     const tickets = await TicketMaintenance.find(filter);
 
     res.status(200).json(tickets);
