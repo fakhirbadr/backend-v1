@@ -6,6 +6,7 @@ const ticketMaintenanceSchema = new mongoose.Schema(
     name: { type: String, required: false },
     site: { type: String, required: false },
     province: { type: String, required: false },
+    region: { type: String, require: false },
     technicien: { type: String, required: false },
     categorie: {
       type: String,
