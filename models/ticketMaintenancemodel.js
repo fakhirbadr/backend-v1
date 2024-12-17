@@ -26,11 +26,27 @@ const ticketMaintenanceSchema = new mongoose.Schema(
     selectedActifId: { type: String, required: false },
     selectedCategoryId: { type: String, required: false },
     selectedEquipmentId: { type: String, required: false },
+    cloturerPar: { type: String, required: false, default: "" },
   },
 
   { timestamps: true }
 );
+ticketMaintenanceSchema.virtual("tempsDeResolutionDetaille").get(function () {
+  if (this.dateCloture) {
+    const diff = this.dateCloture - this.createdAt; // Différence en millisecondes
 
+    const jours = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const heures = Math.floor(
+      (diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
+    );
+    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+
+    return `${jours}j ${heures}h ${minutes}m`;
+  }
+  return "Non clôturé";
+});
+ticketMaintenanceSchema.set("toJSON", { virtuals: true });
+ticketMaintenanceSchema.set("toObject", { virtuals: true });
 const TicketMaintenance = mongoose.model(
   "TicketMaintenance",
   ticketMaintenanceSchema

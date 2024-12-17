@@ -68,6 +68,7 @@ export const createTicket = async (req, res) => {
     selectedActifId,
     selectedCategoryId,
     selectedEquipmentId,
+    cloturerPar,
   } = req.body;
 
   try {
@@ -87,6 +88,7 @@ export const createTicket = async (req, res) => {
       selectedActifId,
       selectedCategoryId,
       selectedEquipmentId,
+      cloturerPar,
     });
 
     await newTicket.save();
@@ -110,6 +112,7 @@ export const updateTicket = async (req, res) => {
     isClosed,
     dateCloture,
     commentaire,
+    cloturerPar,
   } = req.body;
 
   try {
@@ -128,6 +131,7 @@ export const updateTicket = async (req, res) => {
         isClosed,
         dateCloture,
         commentaire,
+        cloturerPar,
       },
       { new: true }
     );
