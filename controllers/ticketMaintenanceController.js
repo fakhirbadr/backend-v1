@@ -5,7 +5,19 @@ import moment from "moment";
 export const getAllTickets = async (req, res) => {
   try {
     // Vérifie les filtres présents dans la requête
-    const { isClosed, currentMonth, site } = req.query;
+    const {
+      isClosed,
+      currentMonth,
+      site,
+      region,
+      isDeleted,
+      technicien,
+      startDate,
+      endDate,
+      province, // Ajout du paramètre province
+      dateClotureStart, // Date de début pour le filtre par date de clôture
+      dateClotureEnd, // Date de fin pour le filtre par date de clôture
+    } = req.query;
 
     // Crée une condition de filtre
     const filter = {};
@@ -27,6 +39,46 @@ export const getAllTickets = async (req, res) => {
     if (site) {
       const sites = site.split(","); // Si plusieurs sites sont passés, on les sépare par des virgules
       filter.site = { $in: sites }; // Utilise $in pour rechercher dans une liste
+    }
+
+    // Ajoute un filtre pour "region" si présent
+    if (region) {
+      const regions = region.split(","); // Gère plusieurs régions passées dans la requête
+      filter.region = { $in: regions }; // Utilise $in pour rechercher dans une liste
+    }
+
+    // Ajoute un filtre pour "province" si présent
+    if (province) {
+      const provinces = province.split(","); // Gère plusieurs provinces passées dans la requête
+      filter.province = { $in: provinces }; // Utilise $in pour rechercher dans une liste
+    }
+
+    // Ajoute un filtre pour "technicien" si présent
+    if (technicien) {
+      const techniciensArray = technicien.split(","); // Utilisez un autre nom pour la variable intermédiaire
+      filter.technicien = { $in: techniciensArray }; // Utilise $in pour rechercher dans une liste
+    }
+
+    // Ajoute un filtre pour "isDeleted" si présent
+    if (isDeleted !== undefined) {
+      filter.isDeleted = isDeleted === "true"; // Convertit "true"/"false" en boolean
+    }
+
+    // Ajoute un filtre pour les dates si "startDate" et "endDate" sont présents
+    if (startDate && endDate) {
+      // Utilise moment.js pour convertir les dates en objets Date
+      filter.createdAt = {
+        $gte: moment(startDate).toDate(),
+        $lte: moment(endDate).toDate(),
+      };
+    }
+
+    // Ajoute un filtre pour la "dateCloture" si des plages de dates sont spécifiées
+    if (dateClotureStart && dateClotureEnd) {
+      filter.dateCloture = {
+        $gte: moment(dateClotureStart).toDate(),
+        $lte: moment(dateClotureEnd).toDate(),
+      };
     }
 
     // Récupère les tickets en fonction des filtres
@@ -70,6 +122,7 @@ export const createTicket = async (req, res) => {
     selectedCategoryId,
     selectedEquipmentId,
     cloturerPar,
+    isDeleted,
   } = req.body;
 
   try {
@@ -91,6 +144,7 @@ export const createTicket = async (req, res) => {
       selectedCategoryId,
       selectedEquipmentId,
       cloturerPar,
+      isDeleted,
     });
 
     await newTicket.save();
@@ -116,6 +170,8 @@ export const updateTicket = async (req, res) => {
     dateCloture,
     commentaire,
     cloturerPar,
+    isDeleted,
+    deletedBy,
   } = req.body;
 
   try {
@@ -136,6 +192,8 @@ export const updateTicket = async (req, res) => {
         dateCloture,
         commentaire,
         cloturerPar,
+        isDeleted,
+        deletedBy,
       },
       { new: true }
     );

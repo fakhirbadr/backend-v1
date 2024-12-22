@@ -34,11 +34,21 @@ export const createActif = async (req, res) => {
  */
 export const getAllActifs = async (req, res) => {
   try {
-    // Récupère tous les actifs de la base de données
-    const { user } = req.params;
+    const { region, province } = req.query; // Fetch region and province from query parameters
 
-    const actifs = await Actif.find();
-    res.status(200).json(actifs); // Retourne la liste des actifs
+    // Build the filter object based on the presence of region and province
+    let filter = {};
+    if (region) {
+      filter.region = region; // Filter by region if provided
+    }
+    if (province) {
+      filter.province = province; // Filter by province if provided
+    }
+
+    // Récupère les actifs filtrés selon la région et/ou la province
+    const actifs = await Actif.find(filter);
+
+    res.status(200).json(actifs); // Retourne la liste des actifs filtrés
   } catch (error) {
     res.status(500).json({
       error: "Erreur lors de la récupération des actifs",

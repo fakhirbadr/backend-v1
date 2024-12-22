@@ -17,7 +17,7 @@ const userSchema = new mongoose.Schema(
     },
     role: {
       type: String,
-      enum: ["admin", "user"], // Les rôles possibles
+      enum: ["admin", "user", "superviseur"], // Les rôles possibles
       default: "user",
     },
     province: {

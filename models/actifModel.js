@@ -14,6 +14,7 @@ const CategorySchema = new mongoose.Schema({
 const ActifSchema = new mongoose.Schema({
   name: { type: String, required: true }, // Nom de l'actif
   region: { type: String, required: true }, // Nom de la région
+  province: { type: String, required: false },
   categories: [CategorySchema], // Liste des catégories
 });
 

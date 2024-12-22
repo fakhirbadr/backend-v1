@@ -236,3 +236,42 @@ export const deleteUser = async (req, res) => {
     res.status(500).json({ message: "Erreur serveur.", error: error.message }); // Retourner l'erreur détaillée
   }
 };
+// Contrôleur pour mettre à jour le mot de passe d'un utilisateur
+export const updatePassword = async (req, res) => {
+  const { id } = req.params; // Récupérer l'ID de l'utilisateur
+  const { currentPassword, newPassword } = req.body; // Récupérer le mot de passe actuel et le nouveau mot de passe
+
+  try {
+    // Vérifier si l'utilisateur existe
+    const user = await User.findById(id);
+    if (!user) {
+      return res.status(404).json({ message: "Utilisateur introuvable." });
+    }
+
+    // Vérifier si le mot de passe actuel est correct
+    const isPasswordValid = await bcrypt.compare(
+      currentPassword,
+      user.password
+    );
+    if (!isPasswordValid) {
+      return res
+        .status(401)
+        .json({ message: "Mot de passe actuel incorrect." });
+    }
+
+    // Hacher le nouveau mot de passe
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(newPassword, salt);
+
+    // Mettre à jour le mot de passe
+    user.password = hashedPassword;
+
+    // Sauvegarder les modifications
+    await user.save();
+
+    res.status(200).json({ message: "Mot de passe mis à jour avec succès." });
+  } catch (error) {
+    console.error("Erreur lors de la mise à jour du mot de passe :", error);
+    res.status(500).json({ message: "Erreur serveur.", error: error.message });
+  }
+};

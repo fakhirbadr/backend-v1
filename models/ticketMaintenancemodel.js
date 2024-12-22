@@ -28,6 +28,8 @@ const ticketMaintenanceSchema = new mongoose.Schema(
     selectedCategoryId: { type: String, required: false },
     selectedEquipmentId: { type: String, required: false },
     cloturerPar: { type: String, required: false, default: "" },
+    isDeleted: { type: Boolean, default: false },
+    deletedBy: { type: String },
   },
 
   { timestamps: true }
