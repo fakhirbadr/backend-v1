@@ -5,7 +5,7 @@ import Fourniture from "../models/ticketFournitureModel.js";
 export const getAllFournitures = async (req, res) => {
   try {
     // Récupérer les filtres depuis la requête
-    const { isClosed, region, province, startDate, endDate, technicien } =
+    const { isClosed, region, province, startDate, endDate, technicien, name } =
       req.query;
 
     // Crée une condition de filtre
@@ -14,6 +14,11 @@ export const getAllFournitures = async (req, res) => {
     // Filtre par état "isClosed" si fourni
     if (isClosed !== undefined) {
       filter.isClosed = isClosed === "true";
+    }
+
+    // Filtre par name de l'actif
+    if (name) {
+      filter.name = name;
     }
 
     // Filtre par région si fourni

@@ -2,6 +2,7 @@ import User from "../models/userModel.js";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs"; // Ajout de bcryptjs pour hacher et vérifier les mots de passe
 import Actif from "../models/actifModel.js"; // Assurez-vous que le modèle Actif est importé
+import recordConnection from "../models/connectionHistory.js"; // Importer le modèle ConnectionHistory
 
 // Fonction pour générer un token JWT
 const generateToken = (id, role) => {
@@ -98,6 +99,15 @@ export const loginUser = async (req, res) => {
 
     // Générer un token JWT
     const token = generateToken(user._id, user.role);
+
+    // Enregistrer l'historique de la connexion
+    const connectionHistory = new recordConnection({
+      userId: user._id,
+      email: user.email,
+    });
+
+    await connectionHistory.save();
+    console.log("Historique de la connexion enregistré.");
 
     res.status(200).json({
       message: "Connexion réussie.",

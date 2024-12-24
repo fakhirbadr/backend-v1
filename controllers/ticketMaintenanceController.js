@@ -61,7 +61,7 @@ export const getAllTickets = async (req, res) => {
 
     // Ajoute un filtre pour "isDeleted" si présent
     if (isDeleted !== undefined) {
-      filter.isDeleted = isDeleted === "true"; // Convertit "true"/"false" en boolean
+      filter.isDeleted = isDeleted === "false"; // Convertit "true"/"false" en boolean
     }
 
     // Ajoute un filtre pour les dates si "startDate" et "endDate" sont présents

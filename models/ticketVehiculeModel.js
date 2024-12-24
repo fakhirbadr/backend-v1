@@ -18,6 +18,8 @@ const ticketVehiculeSchema = new mongoose.Schema(
       type: String,
       required: false,
     },
+    KM: { type: String },
+    prix: { type: String },
     status: { type: String, default: "créé", required: false },
     isClosed: { type: Boolean, default: false, required: true }, // Valeur par défaut à false
     dateCloture: { type: Date, default: null }, // Date de clôture, initialisée à null
