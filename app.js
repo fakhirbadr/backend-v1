@@ -9,6 +9,7 @@ import userRoutes from "./routes/userRoute.js";
 import ticketVehiculeRoutes from "./routes/ticketVehicule.js";
 import actifRoutes from "./routes/actifRoute.js";
 import connectionHistoryRoutes from "./routes/connectionHistoryRoutes.js";
+import getTicketsWithSubTickets from "./routes/subTicketsRoute.js";
 dotenv.config();
 
 const app = express();
@@ -43,5 +44,6 @@ app.use("/api/v1/ticketMaintenance", ticketMaintenanceRoutes);
 app.use("/api/v1/fournitureRoutes", fournitureRoutes);
 app.use("/api/v1/users", userRoutes);
 app.use("/api/v1/connection-history", connectionHistoryRoutes);
+app.use("/api/v1", getTicketsWithSubTickets);
 
 export default app;

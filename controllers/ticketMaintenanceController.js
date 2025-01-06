@@ -17,6 +17,7 @@ export const getAllTickets = async (req, res) => {
       province, // Ajout du paramètre province
       dateClotureStart, // Date de début pour le filtre par date de clôture
       dateClotureEnd, // Date de fin pour le filtre par date de clôture
+      isVisible, // Ajout du paramètre isVisible
     } = req.query;
 
     // Crée une condition de filtre
@@ -81,6 +82,11 @@ export const getAllTickets = async (req, res) => {
       };
     }
 
+    // Ajoute un filtre pour la visibilité si "isVisible" est présent
+    if (isVisible !== undefined) {
+      filter.isVisible = isVisible === "true"; // Convertit "true"/"false" en boolean
+    }
+
     // Récupère les tickets en fonction des filtres
     const tickets = await TicketMaintenance.find(filter);
 
@@ -123,6 +129,7 @@ export const createTicket = async (req, res) => {
     selectedEquipmentId,
     cloturerPar,
     isDeleted,
+    subTickets = [],
   } = req.body;
 
   try {
@@ -145,6 +152,7 @@ export const createTicket = async (req, res) => {
       selectedEquipmentId,
       cloturerPar,
       isDeleted,
+      subTickets,
     });
 
     await newTicket.save();
@@ -172,10 +180,22 @@ export const updateTicket = async (req, res) => {
     cloturerPar,
     isDeleted,
     deletedBy,
+    isVisible,
+    subTickets = [], // Les sous-tickets doivent être envoyés séparément pour être correctement gérés
   } = req.body;
 
   try {
-    // Mise à jour du ticket avec tous les champs passés dans la requête
+    // Recherche le ticket par son ID
+    const ticket = await TicketMaintenance.findById(req.params.id);
+
+    if (!ticket) {
+      return res.status(404).json({ message: "Ticket not found" });
+    }
+
+    // Conserve les sous-tickets existants si les nouveaux sous-tickets ne sont pas passés dans la requête
+    ticket.subTickets = subTickets.length ? subTickets : ticket.subTickets;
+
+    // Mise à jour du ticket principal
     const updatedTicket = await TicketMaintenance.findByIdAndUpdate(
       req.params.id,
       {
@@ -194,6 +214,8 @@ export const updateTicket = async (req, res) => {
         cloturerPar,
         isDeleted,
         deletedBy,
+        isVisible,
+        subTickets: ticket.subTickets, // Garde les sous-tickets existants
       },
       { new: true }
     );
@@ -220,6 +242,35 @@ export const deleteTicket = async (req, res) => {
     }
 
     res.status(200).json({ message: "Ticket deleted successfully" });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// Delete a sub-ticket by ID
+export const deleteSubTicket = async (req, res) => {
+  const { ticketId, subTicketId } = req.params;
+
+  try {
+    // Rechercher le ticket principal et supprimer le sous-ticket correspondant
+    const updatedTicket = await TicketMaintenance.findByIdAndUpdate(
+      ticketId,
+      { $pull: { subTickets: { _id: subTicketId } } }, // Utilisation de `$pull` pour retirer le sous-ticket par son ID
+      { new: true } // Retourner le ticket mis à jour
+    );
+
+    if (!updatedTicket) {
+      return res
+        .status(404)
+        .json({ message: "Ticket or sub-ticket not found" });
+    }
+
+    res
+      .status(200)
+      .json({
+        message: "Sub-ticket deleted successfully",
+        ticket: updatedTicket,
+      });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

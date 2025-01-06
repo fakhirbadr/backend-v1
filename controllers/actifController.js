@@ -7,12 +7,13 @@ import Actif from "../models/actifModel.js"; // Importer le modèle Actif
  */
 export const createActif = async (req, res) => {
   try {
-    const { name, region, categories } = req.body;
+    const { name, region, province, categories } = req.body;
 
     // Crée un nouvel actif avec les données envoyées dans la requête
     const newActif = new Actif({
       name,
       region,
+      province,
       categories,
     });
 
@@ -45,10 +46,12 @@ export const getAllActifs = async (req, res) => {
       filter.province = province; // Filter by province if provided
     }
 
-    // Récupère les actifs filtrés selon la région et/ou la province
-    const actifs = await Actif.find(filter);
+    // Récupère les actifs filtrés selon la région et/ou la province, en excluant la description
+    const actifs = await Actif.find(filter).select(
+      "-categories.equipments.description"
+    );
 
-    res.status(200).json(actifs); // Retourne la liste des actifs filtrés
+    res.status(200).json(actifs); // Retourne la liste des actifs filtrés sans la description
   } catch (error) {
     res.status(500).json({
       error: "Erreur lors de la récupération des actifs",
