@@ -265,12 +265,10 @@ export const deleteSubTicket = async (req, res) => {
         .json({ message: "Ticket or sub-ticket not found" });
     }
 
-    res
-      .status(200)
-      .json({
-        message: "Sub-ticket deleted successfully",
-        ticket: updatedTicket,
-      });
+    res.status(200).json({
+      message: "Sub-ticket deleted successfully",
+      ticket: updatedTicket,
+    });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

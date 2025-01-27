@@ -17,7 +17,16 @@ const userSchema = new mongoose.Schema(
     },
     role: {
       type: String,
-      enum: ["admin", "user", "superviseur"], // Les rôles possibles
+      enum: [
+        "admin",
+        "user",
+        "superviseur",
+        "achat",
+        "docteurs",
+        "directeur",
+        "coordinateur",
+        "chargé de stock",
+      ], // Les rôles possibles
       default: "user",
     },
     province: {
@@ -30,6 +39,37 @@ const userSchema = new mongoose.Schema(
       required: false, // Marquer comme obligatoire si chaque utilisateur doit avoir un site
       trim: true,
     },
+    soldeConges: {
+      type: Number,
+      default: 18, // Initialiser avec 18 jours
+    },
+    derniereMiseAJourConges: {
+      type: Date,
+      default: new Date(), // Date de la dernière mise à jour du solde
+    },
+    historiqueConges: [
+      {
+        date: {
+          type: Date,
+          required: false, // Date à laquelle l'événement a eu lieu
+          default: new Date(),
+        },
+        type: {
+          type: String,
+          enum: ["ajout", "retrait"], // Type d'opération (ajout de jours ou retrait de jours)
+          required: false,
+        },
+        jours: {
+          type: Number,
+          required: false, // Nombre de jours ajoutés ou retirés
+        },
+        commentaire: {
+          type: String, // Optionnel : commentaire ou raison
+          trim: false,
+        },
+      },
+    ],
+
     nomComplet: {
       type: String,
       required: true, // Marquer comme obligatoire ou non en fonction de vos besoins
@@ -58,6 +98,8 @@ const userSchema = new mongoose.Schema(
 //   this.password = await bcrypt.hash(this.password, salt); // Hacher le mot de passe avec le sel
 //   next();
 // });
+
+// Méthode pour ajouter 18 jours de congés au début de chaque année
 
 // Comparaison du mot de passe
 userSchema.methods.comparePassword = async function (password) {

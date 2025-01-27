@@ -15,10 +15,21 @@ const subTicketSchema = new mongoose.Schema(
     description: { type: String, required: false },
     quantite: { type: Number, required: false },
     status: { type: String, default: "créé" },
+    prix: { type: Number, required: false },
+    tarifLivraison: { type: Number, required: false },
+    fournisseur: { type: String, required: false },
+    dateLivraisonEstimee: { type: Date, required: false }, // Nouveau champ pour la date de livraison estimée
 
+    statusHistory: [
+      {
+        status: { type: String, required: true },
+        timestamp: { type: Date, required: true, default: Date.now },
+      },
+    ],
     equipement_deficitaire: { type: String, required: false },
     isClosed: { type: Boolean, default: false }, // État de clôture
     commentaire: { type: String, required: false }, // Optionnel : commentaire
+    createdAt: { type: Date, default: Date.now, immutable: false },
   },
   { timestamps: true } // Ajoute createdAt et updatedAt
 );

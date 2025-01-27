@@ -16,6 +16,7 @@ export const getAllFournitures = async (req, res) => {
       categorie,
       besoin,
       status,
+      isDeleted,
     } = req.query;
 
     // Crée une condition de filtre
@@ -26,18 +27,27 @@ export const getAllFournitures = async (req, res) => {
       filter.isClosed = isClosed === "true";
     }
 
+    //un filtre par "isDeleted" si présent
+    if (isDeleted !== undefined) {
+      filter.isDeleted = isDeleted === "true";
+    }
+
     // Filtre par name de l'actif si fourni
     if (name) {
       filter.name = name;
     }
     // Filtre par status si fourni
-    if (status && status.startsWith("!")) {
-      // Exclure un ou plusieurs statuts
-      const excludedStatuses = status.substring(1).split(",");
-      filter.status = { $nin: excludedStatuses };
-    } else if (status) {
-      // Inclure uniquement le statut spécifié
-      filter.status = status;
+    // Filtre par status si fourni
+    if (status) {
+      if (status.startsWith("!")) {
+        // Exclusion de plusieurs statuts
+        const excludedStatuses = status.substring(1).split(",");
+        filter.status = { $nin: excludedStatuses };
+      } else {
+        // Inclusion de plusieurs statuts
+        const includedStatuses = status.split(",");
+        filter.status = { $in: includedStatuses };
+      }
     }
 
     // Filtre par région si fourni
@@ -241,6 +251,11 @@ export const createFourniture = async (req, res) => {
     status,
     dateCloture,
     commentaire,
+    prix,
+    tarifLivraison,
+    dateLivraisonEstimee,
+    fournisseur,
+    isDeleted,
   } = req.body;
 
   try {
@@ -257,6 +272,11 @@ export const createFourniture = async (req, res) => {
       status,
       dateCloture,
       commentaire,
+      prix,
+      tarifLivraison,
+      dateLivraisonEstimee,
+      fournisseur,
+      isDeleted,
     });
 
     await newFourniture.save();
@@ -268,7 +288,8 @@ export const createFourniture = async (req, res) => {
 
 // Update a Fourniture by ID
 export const updateFourniture = async (req, res) => {
-  console.log("Update Request Body:", req.body); // Debug log
+  console.log("Update Request Body:", req.body);
+
   const {
     name,
     region,
@@ -280,9 +301,29 @@ export const updateFourniture = async (req, res) => {
     status,
     dateCloture,
     commentaire,
+    prix,
+    tarifLivraison,
+    fournisseur,
+    dateLivraisonEstimee,
+    dateCreation,
+    isDeleted,
+    deletedBy,
   } = req.body;
 
   try {
+    // Récupérer la fourniture à mettre à jour
+    const fourniture = await Fourniture.findById(req.params.id);
+
+    if (!fourniture) {
+      return res.status(404).json({ message: "Fourniture not found" });
+    }
+
+    // Vérifier si le statut a changé
+    if (status && status !== fourniture.status) {
+      fourniture.statusHistory.push({ status, timestamp: new Date() });
+    }
+
+    // Mettre à jour les autres champs
     const updatedFourniture = await Fourniture.findByIdAndUpdate(
       req.params.id,
       {
@@ -296,13 +337,17 @@ export const updateFourniture = async (req, res) => {
         status,
         dateCloture,
         commentaire,
+        prix,
+        tarifLivraison,
+        fournisseur,
+        dateLivraisonEstimee,
+        dateCreation,
+        statusHistory: fourniture.statusHistory,
+        isDeleted,
+        deletedBy, // Ajouter l'historique des statuts
       },
       { new: true }
     );
-
-    if (!updatedFourniture) {
-      return res.status(404).json({ message: "Fourniture not found" });
-    }
 
     res.status(200).json(updatedFourniture);
   } catch (error) {

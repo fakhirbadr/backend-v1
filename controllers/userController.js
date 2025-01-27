@@ -118,7 +118,8 @@ export const loginUser = async (req, res) => {
         province: user.province,
         site: user.site,
         nomComplet: user.nomComplet,
-        actifIds: user.actifIds, // Utilisez l'ID enregistré dans le document User
+        actifIds: user.actifIds,
+        soldeConges: user.soldeConges, // Utilisez l'ID enregistré dans le document User
         // Utilisez l'ID enregistré dans le document User
       },
       token,

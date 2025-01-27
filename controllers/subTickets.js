@@ -13,15 +13,16 @@ export const getSubTicketsForMaintenance = async (req, res) => {
       filter["subTickets.isClosed"] = isClosed === "true"; // Convertir en booléen
     }
 
-    // Filtre par status si fourni
     if (status) {
+      // Vérifier si le statut commence par "!" (exclusion)
       if (status.startsWith("!")) {
-        // Exclure un ou plusieurs statuts
+        // Exclure plusieurs statuts
         const excludedStatuses = status.substring(1).split(",");
-        filter["subTickets.status"] = { $nin: excludedStatuses };
+        filter["subTickets.status"] = { $nin: excludedStatuses }; // Exclure les statuts spécifiés
       } else {
-        // Inclure uniquement le statut spécifié
-        filter["subTickets.status"] = status;
+        // Inclure plusieurs statuts (pas de "!" au début)
+        const includedStatuses = status.split(",");
+        filter["subTickets.status"] = { $in: includedStatuses }; // Inclure les statuts spécifiés
       }
     }
 
@@ -73,15 +74,62 @@ export const updateSubTicket = async (req, res) => {
       return res.status(404).json({ message: "Sous-ticket introuvable" });
     }
 
-    // Appliquer les mises à jour
+    // Vérifier si le statut a changé
+    if (updates.status && updates.status !== subTicket.status) {
+      // Ajouter l'historique des statuts
+      subTicket.statusHistory.push({
+        status: updates.status,
+        timestamp: new Date(),
+      });
+    }
+
+    // Appliquer les mises à jour (y compris createdAt si présent)
     Object.keys(updates).forEach((key) => {
-      subTicket[key] = updates[key];
+      if (key === "createdAt") {
+        subTicket.set("createdAt", new Date(updates[key])); // Mise à jour forcée de createdAt
+      } else {
+        subTicket[key] = updates[key];
+      }
     });
 
     // Sauvegarder les modifications
     await ticket.save();
 
     res.json({ message: "Sous-ticket mis à jour avec succès", subTicket });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Erreur serveur" });
+  }
+};
+
+// Récupérer un sous-ticket spécifique par son ID
+export const getSubTicketById = async (req, res) => {
+  const { subTicketId } = req.params; // Récupérer l'ID du sous-ticket à partir des paramètres
+
+  try {
+    // Trouver le ticket de maintenance qui contient le sous-ticket avec l'ID spécifié
+    const ticket = await TicketMaintenance.findOne({
+      "subTickets._id": subTicketId,
+    }).populate("subTickets"); // Peupler les sous-tickets
+
+    if (!ticket) {
+      return res.status(404).json({ message: "Sous-ticket introuvable" });
+    }
+
+    // Trouver le sous-ticket avec l'ID donné dans le ticket
+    const subTicket = ticket.subTickets.id(subTicketId);
+    if (!subTicket) {
+      return res.status(404).json({ message: "Sous-ticket introuvable" });
+    }
+
+    // Ajouter l'ID du parent au sous-ticket
+    const subTicketWithParentId = {
+      ...subTicket.toObject(),
+      parentId: ticket._id, // Ajouter l'ID du parent
+    };
+
+    // Renvoyer le sous-ticket trouvé
+    res.json(subTicketWithParentId);
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Erreur serveur" });

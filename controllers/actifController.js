@@ -178,6 +178,18 @@ export const addEquipmentToCategory = async (req, res) => {
     const { actifId, categoryId } = req.params; // ID de l'actif et de la catégorie
     const { equipment } = req.body; // Données du nouvel équipement
 
+    // Vérification si l'actif existe
+    const actif = await Actif.findById(actifId);
+    if (!actif) {
+      return res.status(404).json({ error: "Actif non trouvé" });
+    }
+
+    // Vérification si la catégorie existe dans l'actif
+    const category = actif.categories.id(categoryId);
+    if (!category) {
+      return res.status(404).json({ error: "Catégorie non trouvée" });
+    }
+
     // Met à jour la catégorie avec un nouvel équipement
     const updatedActif = await Actif.findOneAndUpdate(
       { _id: actifId, "categories._id": categoryId },
@@ -186,7 +198,9 @@ export const addEquipmentToCategory = async (req, res) => {
     );
 
     if (!updatedActif) {
-      return res.status(404).json({ error: "Actif ou catégorie non trouvé" });
+      return res
+        .status(404)
+        .json({ error: "Erreur lors de la mise à jour de l'actif" });
     }
 
     res.status(200).json(updatedActif); // Retourne l'actif mis à jour

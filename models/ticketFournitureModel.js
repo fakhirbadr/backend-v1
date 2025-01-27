@@ -8,11 +8,24 @@ const FournitureSchema = new mongoose.Schema({
   besoin: { type: String, required: false },
   quantite: { type: Number, required: false },
   technicien: { type: String, required: false }, // Nouveau champ pour le technicien
-  dateCreation: { type: Date, default: Date.now }, // Auto-generate the creation date
+  dateCreation: { type: Date, default: Date.now, immutable: false }, // Auto-generate the creation date
   commentaire: { type: String, required: false },
+  isDeleted: { type: Boolean, default: false, required: true },
+  deletedBy: { type: String },
+  dateLivraisonEstimee: { type: Date, required: false }, // Nouveau champ pour la date de livraison estimée
 
   isClosed: { type: Boolean, default: false }, // Valeur par défaut à false
   status: { type: String, required: false, default: "créé" },
+  statusHistory: [
+    {
+      status: { type: String, required: true },
+      timestamp: { type: Date, required: true, default: Date.now },
+    },
+  ],
+  prix: { type: Number, required: false },
+  tarifLivraison: { type: Number, required: false },
+  fournisseur: { type: String, required: false },
+
   dateCloture: { type: Date, default: null }, // Date de clôture, initialisée à null
 });
 FournitureSchema.virtual("tempsDeResolutionDetaille").get(function () {
