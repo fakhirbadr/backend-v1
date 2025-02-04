@@ -2,7 +2,17 @@ import TicketMaintenance from "../models/ticketMaintenancemodel.js";
 import Fourniture from "../models/ticketFournitureModel.js";
 
 export const getMergedData = async (req, res) => {
-  const { isClosed, status, isDeleted } = req.query;
+  const {
+    isClosed,
+    status,
+    isDeleted,
+    region,
+    province,
+    startDate,
+    endDate,
+    categorie,
+    description,
+  } = req.query;
 
   try {
     // 1. Récupération des données brutes
@@ -62,6 +72,14 @@ export const getMergedData = async (req, res) => {
     if (status) {
       mergedData = mergedData.filter((item) => item.status === status);
     }
+    if (categorie) {
+      mergedData = mergedData.filter((item) => item.categorie === categorie);
+    }
+    if (description) {
+      mergedData = mergedData.filter(
+        (item) => item.description === description
+      );
+    }
 
     if (isDeleted !== undefined) {
       const filterDeleted = isDeleted === "true";
@@ -69,7 +87,24 @@ export const getMergedData = async (req, res) => {
         filterDeleted ? item.isDeleted === true : item.isDeleted !== true
       );
     }
+    // Filtre par région
+    if (region) {
+      mergedData = mergedData.filter((item) => item.region === region);
+    }
+    // Filtre par province
+    if (province) {
+      mergedData = mergedData.filter((item) => item.province === province);
+    }
 
+    // Filtre par plage de dates (createdAt)
+    if (startDate && endDate) {
+      const start = new Date(startDate);
+      const end = new Date(endDate);
+      mergedData = mergedData.filter((item) => {
+        const createdAt = new Date(item.createdAt);
+        return createdAt >= start && createdAt <= end;
+      });
+    }
     // 5. Calcul des statistiques
     const countsByType = mergedData.reduce((acc, item) => {
       acc[item.type] = (acc[item.type] || 0) + 1;
