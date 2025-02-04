@@ -14,6 +14,7 @@ import ummcPerformanceRoute from "./routes/ummcperformanceRoute.js";
 import MergedData from "./routes/mergedDataRoute.js";
 import actifInventaire from "./routes/actifInventaireRoute.js";
 import absenceRoutes from "./routes/congéRoute.js";
+import reclamationRoute from "./routes/reclamationRoute.js";
 dotenv.config();
 
 const app = express();
@@ -53,5 +54,6 @@ app.use("/api/v1/ummcperformance", ummcPerformanceRoute);
 app.use("/api/v1", MergedData);
 app.use("/api/v1/inventaire", actifInventaire);
 app.use("/api/v1/absences", absenceRoutes);
+app.use("/api/v1/reclamation", reclamationRoute);
 
 export default app;
