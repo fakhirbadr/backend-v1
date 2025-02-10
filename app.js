@@ -15,6 +15,7 @@ import MergedData from "./routes/mergedDataRoute.js";
 import actifInventaire from "./routes/actifInventaireRoute.js";
 import absenceRoutes from "./routes/congéRoute.js";
 import reclamationRoute from "./routes/reclamationRoute.js";
+import TestSpeedNetworkRoute from "./routes/testSpeedNetworkRoute.js";
 dotenv.config();
 
 const app = express();
@@ -55,5 +56,6 @@ app.use("/api/v1", MergedData);
 app.use("/api/v1/inventaire", actifInventaire);
 app.use("/api/v1/absences", absenceRoutes);
 app.use("/api/v1/reclamation", reclamationRoute);
+app.use("/api/v1/testSpeedNetwork", TestSpeedNetworkRoute);
 
 export default app;

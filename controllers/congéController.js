@@ -36,7 +36,7 @@ export const getAbsenceById = async (req, res) => {
 
 // Ajouter une nouvelle absence
 export const createAbsence = async (req, res) => {
-  const { nomComplet, historique, role, province } = req.body;
+  const { nomComplet, historique, role, province, cle } = req.body;
 
   try {
     const nouvelleAbsence = new Absence({
@@ -44,6 +44,7 @@ export const createAbsence = async (req, res) => {
       role,
       historique,
       province,
+      cle,
     });
 
     const absenceSauvegardée = await nouvelleAbsence.save(); // Sauvegarde dans la base de données
