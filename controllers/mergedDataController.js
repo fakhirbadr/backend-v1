@@ -228,6 +228,23 @@ export const getMergedData = async (req, res) => {
         ((totalClosed / mergedData.length) * 100 || 0).toFixed(2) + "%",
     };
 
+    const totalTickets = mergedData.length;
+    const categoryAnalysis = Object.keys(countsByCategory).reduce(
+      (acc, category) => {
+        if (category !== "total") {
+          // Exclure la clé "total" du calcul
+          const count = countsByCategory[category];
+          const rate = ((count / totalTickets) * 100).toFixed(2) + "%";
+          acc[category] = {
+            // count,
+            rate,
+          };
+        }
+        return acc;
+      },
+      {}
+    );
+
     // 6. Envoi de la réponse
     res.status(200).json({
       mergedData,
@@ -240,6 +257,7 @@ export const getMergedData = async (req, res) => {
       openCountsByCategory,
       avgAgeByCategory,
       globalStats,
+      categoryAnalysis,
     });
   } catch (error) {
     console.error("Erreur:", error);

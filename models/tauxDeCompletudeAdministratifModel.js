@@ -8,19 +8,19 @@ const TauxDeCompletudeAdministratifSchema = new mongoose.Schema(
     },
     region: {
       type: String,
-      required: true,
+      required: false,
     },
     province: {
       type: String,
-      required: true,
+      required: false,
     },
     unite: {
       type: String,
-      required: true,
+      required: false,
     },
     tauxCompletudeAdministratif: {
       type: Number, // Supposons que c'est un pourcentage
-      required: true,
+      required: false,
     },
   },
   { timestamps: true } // Active automatiquement `createdAt` et `updatedAt`

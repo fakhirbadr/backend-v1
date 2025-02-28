@@ -19,6 +19,12 @@ import TestSpeedNetworkRoute from "./routes/testSpeedNetworkRoute.js";
 import tauxDeCompletudeMedicalRoute from "./routes/tauxDeCompletudeMedicalRoute.js";
 import tauxDeCompletudeAdministratifRoute from "./routes/tauxDeCompletudeAdministratifRoute.js";
 import tauxDeCompletudeDeDossierComplet from "./routes/tauxDeCompletudeDeDossierCompletRoute.js";
+import TauxDeCompletudeDesPrescriptions from "./routes/TauxDeCompletudeDesPrescriptionsRoute.js";
+import TauxDeSaisie from "./routes/TauxDeSaisieRoute.js";
+import pathologie from "./routes/patholigiesRoute.js";
+import tauxSpecialite from "./routes/specialiteRoute.js";
+import bodyParser from "body-parser";
+
 dotenv.config();
 
 const app = express();
@@ -36,6 +42,9 @@ app.use(
 // 1) MIDDLEWARE
 app.use(morgan("dev"));
 app.use(express.json());
+// Augmenter la limite de la charge utile
+app.use(bodyParser.json({ limit: "500mb" }));
+app.use(bodyParser.urlencoded({ limit: "500mb", extended: true }));
 
 app.use((req, res, next) => {
   req.requestTime = new Date().toISOString();
@@ -64,11 +73,18 @@ app.use(
   "/api/v1/tauxDeCompletudeDeDossierComplet",
   tauxDeCompletudeDeDossierComplet
 );
+app.use(
+  "/api/v1/TauxDeCompletudeDesPrescriptions",
+  TauxDeCompletudeDesPrescriptions
+);
+app.use("/api/v1/TauxDeSaisie", TauxDeSaisie);
 
 app.use("/api/v1", MergedData);
 app.use("/api/v1/inventaire", actifInventaire);
 app.use("/api/v1/absences", absenceRoutes);
 app.use("/api/v1/reclamation", reclamationRoute);
 app.use("/api/v1/testSpeedNetwork", TestSpeedNetworkRoute);
+app.use("/api/v1/pathologies", pathologie);
+app.use("/api/v1/tauxSpecialite", tauxSpecialite);
 
 export default app;

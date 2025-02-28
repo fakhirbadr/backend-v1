@@ -273,3 +273,77 @@ export const deleteSubTicket = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+// Get equipment categories with percentages
+export const getCatégorieEquipment = async (req, res) => {
+  try {
+    // Récupérer les filtres de la requête
+    const { isClosed, region, province, startDate, endDate } = req.query;
+
+    // Créer un objet de filtre pour la requête
+    const filter = {};
+
+    // Ajouter un filtre pour "isClosed" si présent
+    if (isClosed !== undefined) {
+      filter.isClosed = isClosed === "true"; // Convertit "true"/"false" en boolean
+    }
+
+    // Ajouter un filtre pour "region" si présent
+    if (region) {
+      const regions = region.split(","); // Gère plusieurs régions passées dans la requête
+      filter.region = { $in: regions }; // Utilise $in pour rechercher dans une liste
+    }
+
+    // Ajouter un filtre pour "province" si présent
+    if (province) {
+      const provinces = province.split(","); // Gère plusieurs provinces passées dans la requête
+      filter.province = { $in: provinces }; // Utilise $in pour rechercher dans une liste
+    }
+
+    // Ajouter un filtre pour les dates si "startDate" et "endDate" sont présents
+    if (startDate && endDate) {
+      filter.createdAt = {
+        $gte: new Date(startDate), // Date de début
+        $lte: new Date(endDate), // Date de fin
+      };
+    }
+
+    // Récupérer les tickets en fonction des filtres
+    const tickets = await TicketMaintenance.find(filter);
+
+    // Si aucun ticket n'est trouvé, retourner un message
+    if (tickets.length === 0) {
+      return res
+        .status(200)
+        .json({ message: "No tickets found with the given filters." });
+    }
+
+    // Initialiser un objet pour stocker le nombre de tickets par catégorie
+    const categoryCounts = {};
+
+    // Compter le nombre de tickets pour chaque catégorie
+    tickets.forEach((ticket) => {
+      if (ticket.categorie) {
+        if (categoryCounts[ticket.categorie]) {
+          categoryCounts[ticket.categorie]++;
+        } else {
+          categoryCounts[ticket.categorie] = 1;
+        }
+      }
+    });
+
+    // Calculer le pourcentage pour chaque catégorie
+    const totalTickets = tickets.length;
+    const categoryPercentages = {};
+
+    for (const category in categoryCounts) {
+      const percentage = (categoryCounts[category] / totalTickets) * 100;
+      categoryPercentages[category] = percentage.toFixed(1) + "%"; // Arrondir à une décimale
+    }
+
+    // Retourner les résultats
+    res.status(200).json(categoryPercentages);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};

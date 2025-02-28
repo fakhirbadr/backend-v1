@@ -115,6 +115,7 @@ export const loginUser = async (req, res) => {
         id: user._id,
         email: user.email,
         role: user.role,
+        region: user.region,
         province: user.province,
         site: user.site,
         nomComplet: user.nomComplet,
@@ -151,6 +152,7 @@ export const updateUser = async (req, res) => {
     email,
     password,
     role,
+    region,
     province,
     site,
     nomComplet,
@@ -184,6 +186,7 @@ export const updateUser = async (req, res) => {
       user.password = await bcrypt.hash(password, salt);
     }
     if (role) user.role = role;
+    if (region) user.region = region;
     if (province) user.province = province;
     if (site) user.site = site;
     if (nomComplet) user.nomComplet = nomComplet;
@@ -197,6 +200,7 @@ export const updateUser = async (req, res) => {
         id: updatedUser._id,
         email: updatedUser.email,
         role: updatedUser.role,
+        region: updatedUser.region,
         province: updatedUser.province,
         site: updatedUser.site,
         nomComplet: updatedUser.nomComplet,

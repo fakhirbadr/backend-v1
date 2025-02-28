@@ -8,12 +8,15 @@ import {
   addCategoryToActif,
   addEquipmentToCategory,
   updateEquipmentById,
+  getTauxDispo,
 } from "../controllers/actifController.js";
 
 const router = express.Router();
 
 // Récupérer tous les actifs
 router.get("/", getAllActifs);
+
+router.get("/taux", getTauxDispo);
 
 // Récupérer un actif par son ID
 router.get("/:id", getActifById);

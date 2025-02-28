@@ -251,3 +251,61 @@ export const updateEquipmentById = async (req, res) => {
     res.status(500).json({ message: "Erreur serveur", error: error.message });
   }
 };
+
+/**
+ * Calcule le taux de disponibilité des équipements par catégorie pour tous les actifs
+ * @param {Object} req - La requête Express
+ * @param {Object} res - La réponse Express
+ */
+export const getTauxDispo = async (req, res) => {
+  try {
+    // Récupère tous les actifs
+    const actifs = await Actif.find();
+
+    // Initialise un objet pour stocker les taux de disponibilité par catégorie
+    const tauxDispoParCategorie = {};
+
+    // Parcourt chaque actif
+    actifs.forEach((actif) => {
+      // Parcourt chaque catégorie de l'actif
+      actif.categories.forEach((category) => {
+        const totalEquipments = category.equipments.length;
+        const functionalEquipments = category.equipments.filter(
+          (equipment) => equipment.isFunctionel
+        ).length;
+
+        // Si la catégorie n'existe pas encore dans l'objet, on l'initialise
+        if (!tauxDispoParCategorie[category.name]) {
+          tauxDispoParCategorie[category.name] = {
+            totalEquipments: 0,
+            functionalEquipments: 0,
+          };
+        }
+
+        // Ajoute les équipements de cette catégorie au total global
+        tauxDispoParCategorie[category.name].totalEquipments += totalEquipments;
+        tauxDispoParCategorie[category.name].functionalEquipments +=
+          functionalEquipments;
+      });
+    });
+
+    // Calcule le taux de disponibilité pour chaque catégorie
+    const result = {};
+    for (const [categoryName, data] of Object.entries(tauxDispoParCategorie)) {
+      const tauxDispo =
+        data.totalEquipments > 0
+          ? ((data.functionalEquipments / data.totalEquipments) * 100).toFixed(
+              2
+            )
+          : 0;
+      result[categoryName] = `${tauxDispo}%`;
+    }
+
+    res.status(200).json(result); // Retourne les taux de disponibilité par catégorie
+  } catch (error) {
+    res.status(500).json({
+      error: "Erreur lors du calcul du taux de disponibilité",
+      details: error.message,
+    });
+  }
+};
