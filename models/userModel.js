@@ -15,7 +15,7 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    region: { type: String, required: true },
+    region: { type: String, required: false },
     role: {
       type: String,
       enum: [
