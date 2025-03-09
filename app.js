@@ -23,6 +23,7 @@ import TauxDeCompletudeDesPrescriptions from "./routes/TauxDeCompletudeDesPrescr
 import TauxDeSaisie from "./routes/TauxDeSaisieRoute.js";
 import pathologie from "./routes/patholigiesRoute.js";
 import tauxSpecialite from "./routes/specialiteRoute.js";
+import inactiveUmmc from "./routes/ummcInactiveRoute.js";
 import bodyParser from "body-parser";
 
 dotenv.config();
@@ -86,5 +87,6 @@ app.use("/api/v1/reclamation", reclamationRoute);
 app.use("/api/v1/testSpeedNetwork", TestSpeedNetworkRoute);
 app.use("/api/v1/pathologies", pathologie);
 app.use("/api/v1/tauxSpecialite", tauxSpecialite);
+app.use("/api/v1/inactiveUmmc", inactiveUmmc);
 
 export default app;

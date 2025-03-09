@@ -7,6 +7,7 @@ import {
   getPathologyPercentages,
   getAllConsultation,
   getAllTeleexpertises,
+  getAgeRanges,
 } from "../controllers/ummcPerformanceController.js";
 const router = express.Router();
 
@@ -16,5 +17,6 @@ router.get("/path", getPathologyPercentages);
 router.post("/", createUmmcPerformance);
 router.get("/consultations", getAllConsultation);
 router.get("/teleexpertises", getAllTeleexpertises);
+router.get("/ageRanges", getAgeRanges);
 
 export default router;

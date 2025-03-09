@@ -17,11 +17,12 @@ export const getAllTestSpeedNetworks = async (req, res) => {
       query.testHoraire = testHoraire; // Recherche exacte ou autre traitement selon besoin
     }
 
-    // Filtre par date (assurez-vous que la date dans la requête est au format ISO ou similaire)
-    if (date) {
-      const parsedDate = new Date(date); // Convertir en objet Date
-      query.date = { $gte: parsedDate }; // Exemple : rechercher les enregistrements à partir de cette date
-    }
+    // Calculer la date d'il y a deux jours
+    const twoDaysAgo = new Date();
+    twoDaysAgo.setDate(twoDaysAgo.getDate() - 2);
+
+    // Filtre par date pour les deux derniers jours
+    query.date = { $gte: twoDaysAgo };
 
     const testSpeedNetworks = await TestSpeedNetwork.find(query);
     res.status(200).json(testSpeedNetworks);

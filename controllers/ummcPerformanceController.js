@@ -32,6 +32,18 @@ export const getAllUmmcPerformance = async (req, res) => {
         (entry) => entry.date <= new Date(dateFin)
       );
     }
+    // Extraire les valeurs uniques pour les filtres disponibles
+    const regions = [...new Set(filteredData.map((entry) => entry.region))]
+      .filter(Boolean)
+      .sort();
+
+    const provinces = [...new Set(filteredData.map((entry) => entry.province))]
+      .filter(Boolean)
+      .sort();
+
+    const unites = [...new Set(filteredData.map((entry) => entry.unite))]
+      .filter(Boolean)
+      .sort();
 
     // Initialiser les variables pour les calculs
     let totalPriseEnCharge = 0;
@@ -203,6 +215,11 @@ export const getAllUmmcPerformance = async (req, res) => {
       ageRates,
       servicesData,
       topPathologies: sortedPathologies,
+      availableFilters: {
+        regions,
+        provinces,
+        unites,
+      },
     });
   } catch (error) {
     console.error("Erreur lors de la récupération des données :", error);
@@ -624,6 +641,92 @@ export const getAllTeleexpertises = async (req, res) => {
     });
   } catch (error) {
     console.error("Erreur lors de la récupération des téléexpertises :", error);
+    res.status(500).json({ message: "Erreur serveur" });
+  }
+};
+export const getAgeRanges = async (req, res) => {
+  try {
+    // Récupérer les paramètres de requête
+    const { region, province, unite, dateDebut, dateFin } = req.query;
+
+    // Construire le filtre de base
+    const filter = {};
+    if (region) filter.region = region;
+    if (province) filter.province = province;
+    if (unite) filter.unite = unite;
+
+    // Récupérer toutes les données sans filtrer par date (car les dates sont des strings)
+    const data = await ummcperformance.find(filter);
+
+    // Convertir les dates en objets Date et filtrer manuellement
+    let filteredData = data.map((entry) => ({
+      ...entry._doc, // Utiliser ._doc pour accéder aux données brutes de Mongoose
+      date: new Date(entry.date), // Convertir la date en objet Date
+    }));
+
+    // Appliquer le filtre de date manuellement
+    if (dateDebut) {
+      filteredData = filteredData.filter(
+        (entry) => entry.date >= new Date(dateDebut)
+      );
+    }
+    if (dateFin) {
+      filteredData = filteredData.filter(
+        (entry) => entry.date <= new Date(dateFin)
+      );
+    }
+
+    // Initialiser les variables pour les calculs des tranches d'âge
+    const ageRanges = {
+      "0-6": 0,
+      "7-14": 0,
+      "15-24": 0,
+      "25-64": 0,
+      "65-100": 0,
+    };
+
+    // Parcourir les données filtrées pour effectuer les calculs des tranches d'âge
+    filteredData.forEach((entry) => {
+      ageRanges["0-6"] += entry.ageGroup0to6 || 0;
+      ageRanges["7-14"] += entry.ageGroup7to14 || 0;
+      ageRanges["15-24"] += entry.ageGroup15to24 || 0;
+      ageRanges["25-64"] += entry.ageGroup25to64 || 0;
+      ageRanges["65-100"] += entry.ageGroup65to100 || 0;
+    });
+
+    // Calculer le total des prises en charge
+    const totalPriseEnCharge = Object.values(ageRanges).reduce(
+      (sum, count) => sum + count,
+      0
+    );
+
+    // Calculer les taux par tranche d'âge
+    const ageRates = totalPriseEnCharge
+      ? {
+          "0-6": ((ageRanges["0-6"] / totalPriseEnCharge) * 100).toFixed(2),
+          "7-14": ((ageRanges["7-14"] / totalPriseEnCharge) * 100).toFixed(2),
+          "15-24": ((ageRanges["15-24"] / totalPriseEnCharge) * 100).toFixed(2),
+          "25-64": ((ageRanges["25-64"] / totalPriseEnCharge) * 100).toFixed(2),
+          "65-100": ((ageRanges["65-100"] / totalPriseEnCharge) * 100).toFixed(
+            2
+          ),
+        }
+      : {
+          "0-6": "0.00",
+          "7-14": "0.00",
+          "15-24": "0.00",
+          "25-64": "0.00",
+          "65-100": "0.00",
+        };
+
+    // Renvoyer la réponse avec les tranches d'âge et leurs taux
+    res.status(200).json({
+      totalPriseEnCharge,
+      ageRanges,
+      ageRates,
+    });
+  } catch (error) {
+    console.error("Erreur lors de la récupération des tranches d'âge :", error);
     res.status(500).json({ message: "Erreur serveur" });
   }
 };
