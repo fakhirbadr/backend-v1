@@ -27,6 +27,7 @@ const userSchema = new mongoose.Schema(
         "directeur",
         "coordinateur",
         "chargé de stock",
+        "chargés de performance",
       ], // Les rôles possibles
       default: "user",
     },
